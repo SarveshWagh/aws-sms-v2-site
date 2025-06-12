@@ -1,0 +1,40 @@
+name: Terraform Destroy CE on AWS
+
+on:
+  workflow_dispatch:
+
+jobs:
+  terraform-destroy:
+    name: Terraform Destroy
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.6.6
+
+      - name: Decode P12 file from GitHub Secret
+        run: |
+          echo "${{ secrets.VES_P12_B64 }}" | base64 --decode > volterra.p12
+
+      - name: Download Terraform State Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: terraform-state
+
+      - name: Move Terraform State File to Root
+        run: mv terraform-state/terraform.tfstate .
+
+      - name: Terraform Init
+        run: terraform init
+
+      - name: Terraform Destroy
+        env:
+          VES_P12_PASSWORD: ${{ secrets.VES_P12_PASSWORD }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        run: terraform destroy -auto-approve -var "api_p12_file=volterra.p12" -var "api_url=${{ secrets.VES_API_URL }}"

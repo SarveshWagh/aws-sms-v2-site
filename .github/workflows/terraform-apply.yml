@@ -1,0 +1,50 @@
+name: Terraform Apply to F5XC
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - '**.tf'
+      - '**.tfvars'
+
+jobs:
+  terraform:
+    name: Terraform Plan & Apply
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.6.6
+
+      - name: Decode P12 file from GitHub Secret
+        run: |
+          echo "${{ secrets.VES_P12_B64 }}" | base64 --decode > volterra.p12
+
+      - name: Terraform Init
+        run: terraform init
+
+      - name: Terraform Plan
+        env:
+          VES_P12_PASSWORD: ${{ secrets.VES_P12_PASSWORD }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        run: terraform plan -var "api_p12_file=volterra.p12" -var "api_url=${{ secrets.VES_API_URL }}"
+
+      - name: Terraform Apply
+        env:
+          VES_P12_PASSWORD: ${{ secrets.VES_P12_PASSWORD }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        run: terraform apply -auto-approve -var "api_p12_file=volterra.p12" -var "api_url=${{ secrets.VES_API_URL }}"
+
+      - name: Upload Terraform State as Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: terraform-state
+          path: terraform.tfstate
