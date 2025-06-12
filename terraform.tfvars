@@ -21,7 +21,7 @@ sg-name = "my-sg-group"
 vpc-id = "vpc-059dabf7405169983"
 
 # XC variables
-smsv2-site-name = "sarvesh-wagh-aws-site"
+smsv2-site-name = "spiderman-aws-site"
 num_of_ce_nodes = 3
 # api_p12_file     = "./f5-consult.console.ves.volterra.io.api-creds.p12"
 # api_url          = "https://f5-consult.console.ves.volterra.io/api"
