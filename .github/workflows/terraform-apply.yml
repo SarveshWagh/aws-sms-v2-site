@@ -43,6 +43,9 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         run: terraform apply -auto-approve -var "api_p12_file=volterra.p12" -var "api_url=${{ secrets.VES_API_URL }}"
 
+      - name: Debug - List files after apply
+        run: ls -la
+
       - name: Upload Terraform State as Artifact
         uses: actions/upload-artifact@v4
         with:

@@ -215,4 +215,11 @@ write_files:
 EOF
     depends_on = [ volterra_token.aws-smsv2-site-token ]
 }
+
+terraform {
+  backend "local" {
+    path = "terraform.tfstate"
+  }
+}
+
 # =========================================================================================================
